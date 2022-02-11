@@ -1,0 +1,35 @@
+# when entering the command line change the machine to the name you want
+sudo hostnamectl set-hostname server.example.com
+
+# enter in root
+sudo su -
+
+# update and upgrade system ubuntu
+apt-get update && apt upgrade
+
+# install NAT
+apt install netfilter-persistent iptables-persistent
+
+# NAT - OUTSIDE
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+
+# adding a prerouting door (80/443) to DMZ/Client
+iptables -t nat -A PREROUTING -i eth0 -p tcp -m multiport --dport 80,443 -j DNAT --to-destination IP.DMZ/CLI
+
+# Comand to confirm if is what you want
+iptables -t nat -L -nv
+
+# Save NAT alterations
+netfilter-persistent save
+
+# go into this document and uncomment the line where is marked ipv4.ip_forward
+nano /etc/sysctl.conf
+        net.ipv4.ip_forward=1
+        
+# Confirm that it really was recorded
+sysctl -p
+
+# Confirm if you have internet by using ping
+ping 1.1.1.1
+    or
+ping 8.8.8.8
